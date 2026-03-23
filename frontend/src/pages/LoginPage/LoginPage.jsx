@@ -1,63 +1,96 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { api } from "../../api";
 import "./LoginPage.scss";
 
-function LoginPage() {
-  const [email, setEmail] = useState("admin@mail.com");
-  const [password, setPassword] = useState("123");
-  const [error, setError] = useState("");
-
+export default function LoginPage() {
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
 
-  try {
-    const data = await api.login(email, password);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-    localStorage.setItem("accessToken", data.accessToken);
-    localStorage.setItem("refreshToken", data.refreshToken);
-    localStorage.setItem("role", data.role);
+  const onChange = (e) => {
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
-    navigate("/");
-  } catch (err) {
-    setError(err.response?.data?.message || "Ошибка входа");
-  }
-};
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    try {
+      setLoading(true);
+      await api.login(form.email, form.password);
+      navigate("/");
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || "Ошибка входа");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="page-login">
-      <div className="login-card">
-        <h2 className="login-title">Вход в систему</h2>
+    <div className="authPage">
+      <div className="authCard">
+        <div className="authCard__top">
+          <div className="authCard__brand">Tech Store</div>
+          <h1 className="authCard__title">Вход</h1>
+          <p className="authCard__subtitle">
+            Войдите в аккаунт для работы с товарами и личным профилем
+          </p>
+        </div>
 
-        <form className="login-form" onSubmit={handleSubmit}>
-          <input
-            className="login-input"
-            type="email"
-            placeholder="Введите email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+        <form className="authForm" onSubmit={onSubmit}>
+          <label className="authField">
+            <span>Email</span>
+            <input
+              type="email"
+              name="email"
+              placeholder="user@mail.com"
+              value={form.email}
+              onChange={onChange}
+              required
+            />
+          </label>
 
-          <input
-            className="login-input"
-            type="password"
-            placeholder="Введите пароль"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <label className="authField">
+            <span>Пароль</span>
+            <input
+              type="password"
+              name="password"
+              placeholder="Введите пароль"
+              value={form.password}
+              onChange={onChange}
+              required
+            />
+          </label>
 
-          <button className="login-btn" type="submit">
-            Войти
+          {error && <div className="authError">{error}</div>}
+
+          <button className="authBtn authBtn--primary" type="submit" disabled={loading}>
+            {loading ? "Вход..." : "Войти"}
           </button>
         </form>
 
-        {error && <div className="login-error">{error}</div>}
+        <div className="authCard__bottom">
+          <span>Нет аккаунта?</span>
+          <Link to="/register" className="authLink">
+            Зарегистрироваться
+          </Link>
+        </div>
+
+        <div className="authHint">
+          Тестовый администратор: <b>admin@mail.com</b> / <b>123456</b>
+        </div>
       </div>
     </div>
   );
 }
-
-export default LoginPage;

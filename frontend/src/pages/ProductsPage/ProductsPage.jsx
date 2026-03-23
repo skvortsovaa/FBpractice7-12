@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./ProductsPage.scss";
 import ProductsList from "../../components/ProductsList";
 import ProductModal from "../../components/ProductModal";
 import { api } from "../../api/index";
 
 export default function ProductsPage() {
+  const navigate = useNavigate();
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -21,7 +24,7 @@ export default function ProductsPage() {
 
   const logout = async () => {
     await api.logout();
-    window.location.href = "/login";
+    navigate("/login");
   };
 
   const handleAuthError = (err) => {
@@ -32,7 +35,9 @@ export default function ProductsPage() {
       status === 401 ||
       status === 403 ||
       message === "Нет токена" ||
-      message === "Неверный токен"
+      message === "Неверный токен" ||
+      message === "Токен отсутствует" ||
+      message === "Токен недействителен или истёк"
     ) {
       logout();
       return true;
@@ -128,6 +133,17 @@ export default function ProductsPage() {
 
           <div className="header__right">
             <span style={{ marginRight: "12px" }}>Роль: {role || "guest"}</span>
+
+            {isAdmin && (
+              <button
+                className="btn"
+                style={{ marginRight: "8px" }}
+                onClick={() => navigate("/admin")}
+              >
+                Админка
+              </button>
+            )}
+
             <button className="btn" onClick={logout}>
               Выйти
             </button>
