@@ -64,7 +64,7 @@ npm start         # или: npm run dev (с nodemon)
 cd frontend
 npm install
 npm run dev
-# Приложение: http://localhost:5173
+# Приложение: http://localhost:3001
 ```
 
 ## API маршруты
